@@ -2,16 +2,17 @@ import sqlite3
 import csv
 import os
 from datetime import datetime
-
-DB_PATH = os.path.join(os.path.dirname(__file__), "data", "dream_history.db")
-CSV_PATH = os.path.join(os.path.dirname(__file__), "data", "dream_history.csv")
-LEVELS_DIR = os.path.join(os.path.dirname(__file__), "levels")
-
-TILE_SIZE = 64
-TILE_WALL = "#"
-TILE_STAR = "*"
-TILE_PLAYER = "@"
-TILE_EXIT = "E"
+from config import (
+    DB_PATH,
+    CSV_PATH,
+    LEVELS_DIR,
+    TILE_SIZE,
+    TILE_WALL,
+    TILE_STAR,
+    TILE_PLAYER,
+    TILE_EXIT,
+    RECORDS_LIMIT,
+)
 
 
 def init_db():
@@ -69,7 +70,9 @@ def save_result(level, score, stars_collected, stars_total, time_seconds):
         )
 
 
-def get_top_records(limit=10):
+def get_top_records(limit=None):
+    if limit is None:
+        limit = RECORDS_LIMIT
     init_db()
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
