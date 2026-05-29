@@ -117,3 +117,21 @@ def load_level(level_num):
     level_height = len(lines) * TILE_SIZE
 
     return walls, stars, player_pos, exit_pos, level_width, level_height
+
+
+def get_last_uncompleted_level(max_levels):
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    cur.execute("SELECT MAX(level) FROM records")
+    row = cur.fetchone()
+    conn.close()
+
+    if row and row[0] is not None:
+        max_id_in_db = row[0]
+        if max_id_in_db < max_levels:
+            return max_id_in_db + 1
+        return max_levels
+
+    return 1  
