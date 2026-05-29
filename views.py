@@ -98,7 +98,7 @@ class MenuView(arcade.View):
         title_y = SCREEN_HEIGHT / 2 + 150
         pulse = 1.0 + 0.04 * math.sin(self._timer * 2)
         arcade.draw_text(
-            "✦ Ловец Снов ✦",
+            "Ловец снов ",
             SCREEN_WIDTH / 2,
             title_y,
             (220, 200, 255),
@@ -119,25 +119,25 @@ class MenuView(arcade.View):
         btn_y = SCREEN_HEIGHT / 2 - 20
         arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, btn_y, 280, 50, (100, 60, 180, 200))
         arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, btn_y, 280, 50, (200, 160, 255), 2)
-        arcade.draw_text("▶  Начать путешествие", SCREEN_WIDTH / 2, btn_y, (255, 240, 255), font_size=18, anchor_x="center", anchor_y="center")
+        arcade.draw_text("Начать путешествие", SCREEN_WIDTH / 2, btn_y, (255, 240, 255), font_size=18, anchor_x="center", anchor_y="center")
 
         rec_y = btn_y - 70
         arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, rec_y, 280, 50, (60, 40, 100, 180))
         arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, rec_y, 280, 50, (160, 130, 200), 2)
-        arcade.draw_text("★  Таблица снов", SCREEN_WIDTH / 2, rec_y, (200, 180, 240), font_size=18, anchor_x="center", anchor_y="center")
+        arcade.draw_text("Таблица снов", SCREEN_WIDTH / 2, rec_y, (200, 180, 240), font_size=18, anchor_x="center", anchor_y="center")
 
         arcade.draw_text("WASD / стрелки — управление", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 180, (140, 120, 180), font_size=13, anchor_x="center")
 
     def _draw_records(self):
         arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 700, 500, (40, 25, 65, 220))
         arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 700, 500, (160, 120, 220), 2)
-        arcade.draw_text("★ Таблица снов ★", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 210, (220, 200, 255), font_size=26, anchor_x="center", bold=True)
+        arcade.draw_text("Таблица снов", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 210, (220, 200, 255), font_size=26, anchor_x="center", bold=True)
 
         if not self._records:
             arcade.draw_text("Нет записей", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, (180, 160, 220), font_size=18, anchor_x="center")
         else:
             headers = ["Дата", "Ур.", "Очки", "Звёзды", "Время"]
-            cols = [214, 314, 414, 514, 614]
+            cols = [294, 394, 494, 594, 694]
             for i, h in enumerate(headers):
                 arcade.draw_text(h, cols[i], SCREEN_HEIGHT / 2 + 165, (200, 180, 255), font_size=13, anchor_x="center", bold=True)
             for row_i, rec in enumerate(self._records[:8]):
@@ -148,7 +148,7 @@ class MenuView(arcade.View):
                 for i, v in enumerate(values):
                     arcade.draw_text(v, cols[i], y, color, font_size=12, anchor_x="center")
 
-        arcade.draw_text("← Назад (Escape)", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 220, (160, 140, 200), font_size=14, anchor_x="center")
+        arcade.draw_text("Назад (Escape)", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 220, (160, 140, 200), font_size=14, anchor_x="center")
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self._show_records:
@@ -392,7 +392,7 @@ class GameView(arcade.View):
         arcade.draw_text("Осознанность", bar_x, bar_y + 12, (200, 180, 255), font_size=11)
 
         arcade.draw_text(f"Очки: {self._player.score}", SCREEN_WIDTH - 20, SCREEN_HEIGHT - 30, (220, 200, 255), font_size=14, anchor_x="right")
-        arcade.draw_text(f"★ {self._stars_collected}/{self._stars_total}", SCREEN_WIDTH - 20, SCREEN_HEIGHT - 55, (255, 220, 100), font_size=13, anchor_x="right")
+        arcade.draw_text(f"{self._stars_collected}/{self._stars_total}", SCREEN_WIDTH - 20, SCREEN_HEIGHT - 55, (255, 220, 100), font_size=13, anchor_x="right")
         arcade.draw_text(LEVEL_NAMES.get(self.level, ""), SCREEN_WIDTH / 2, SCREEN_HEIGHT - 25, (180, 160, 220), font_size=13, anchor_x="center")
         arcade.draw_text("Escape — меню", 10, 12, (120, 100, 160), font_size=11)
 
@@ -434,11 +434,11 @@ class GameOverView(arcade.View):
         arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 700, 460, (160, 120, 220), 2)
 
         if self.won:
-            title = "✦ Сон завершён ✦"
+            title = "Сон завершён"
             title_color = (220, 200, 255)
-            sub = "Ловец Снов поймал все воспоминания"
+            sub = "Ловец снов поймал воспоминания"
         else:
-            title = "☁ Кошмар прервал сон ☁"
+            title = "Кошмар прервал сон"
             title_color = (200, 140, 180)
             sub = "Осознанность упала до нуля"
 
@@ -457,12 +457,12 @@ class GameOverView(arcade.View):
             btn_y = SCREEN_HEIGHT / 2 - 110
             arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, btn_y, 280, 46, (100, 60, 180, 200))
             arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, btn_y, 280, 46, (200, 160, 255), 2)
-            arcade.draw_text("▶  Следующий уровень", SCREEN_WIDTH / 2, btn_y, (255, 240, 255), font_size=16, anchor_x="center", anchor_y="center")
+            arcade.draw_text("Следующий уровень", SCREEN_WIDTH / 2, btn_y, (255, 240, 255), font_size=16, anchor_x="center", anchor_y="center")
 
         menu_y = SCREEN_HEIGHT / 2 - 170
         arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, menu_y, 220, 44, (60, 40, 100, 180))
         arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, menu_y, 220, 44, (160, 130, 200), 2)
-        arcade.draw_text("↩  В главное меню", SCREEN_WIDTH / 2, menu_y, (200, 180, 240), font_size=15, anchor_x="center", anchor_y="center")
+        arcade.draw_text("В главное меню", SCREEN_WIDTH / 2, menu_y, (200, 180, 240), font_size=15, anchor_x="center", anchor_y="center")
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self._next_level:

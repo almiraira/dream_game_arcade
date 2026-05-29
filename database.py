@@ -73,11 +73,16 @@ def save_result(level, score, stars_collected, stars_total, time_seconds):
 def get_top_records(limit=None):
     if limit is None:
         limit = RECORDS_LIMIT
+
     init_db()
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
+
     cur.execute(
-        "SELECT date, level, score, stars_collected, stars_total, time_seconds FROM records ORDER BY score DESC LIMIT ?",
+        """SELECT date, level, score, stars_collected, stars_total, time_seconds
+           FROM records
+           ORDER BY stars_collected DESC, time_seconds ASC
+               LIMIT ?""",
         (limit,),
     )
     rows = cur.fetchall()
