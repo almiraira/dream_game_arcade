@@ -65,7 +65,6 @@ class MenuView(arcade.View):
         self._load_background()
 
     def _load_background(self):
-        """Загружаем фоновое изображение меню"""
         bg_path = os.path.join(ASSETS_IMAGES_DIR, "bg", "menu_bg.png")
         if os.path.isfile(bg_path):
             self._bg_image = arcade.load_texture(bg_path)
@@ -211,7 +210,6 @@ class GameView(arcade.View):
         self._load_background()
 
     def _load_background(self):
-        """Загружаем фоновое изображение для уровня"""
         bg_image_name = LEVEL_BG_IMAGES.get(self.level)
         if bg_image_name:
             bg_path = os.path.join(ASSETS_IMAGES_DIR, "bg", bg_image_name)
@@ -362,7 +360,6 @@ class GameView(arcade.View):
             SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT, bg
         )
 
-        # Рисуем фоновое изображение, если оно загружено
         if self._bg_image:
             self._camera.use()
             arcade.draw_lrwh_rectangle_textured(0, 0, self._level_width, self._level_height, self._bg_image)
