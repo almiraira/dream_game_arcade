@@ -1,6 +1,7 @@
 import arcade
 import os
 import math
+import random
 import time
 
 from entities import Player, Collectible, Obstacle, Nightmare, ExitSprite, STAR_POINTS
@@ -23,8 +24,6 @@ from config import (
     SHAKE_DURATION,
     SHAKE_INTENSITY,
     COLOR_MENU_BG,
-    COLOR_TEXT_PRIMARY,
-    COLOR_TEXT_SECONDARY,
     COLOR_AWARENESS_BG,
     COLOR_AWARENESS_BAR,
     COLOR_AWARENESS_BORDER,
@@ -50,6 +49,24 @@ def get_rank(percent):
     return RANKS[-1][1]
 
 
+def _center_hit(x, y, center_x, center_y, half_width, half_height):
+    return abs(x - center_x) < half_width and abs(y - center_y) < half_height
+
+
+def _draw_button(center_x, center_y, width, height, bg_color, border_color, text, text_color, text_size, text_y=None):
+    arcade.draw_lbwh_rectangle_filled(center_x - width / 2, center_y - height / 2, width, height, bg_color)
+    arcade.draw_lbwh_rectangle_outline(center_x - width / 2, center_y - height / 2, width, height, border_color, 2)
+    arcade.draw_text(
+        text,
+        center_x,
+        center_y if text_y is None else text_y,
+        text_color,
+        font_size=text_size,
+        anchor_x="center",
+        anchor_y="center",
+    )
+
+
 class MenuView(arcade.View):
     def __init__(self):
         super().__init__()
@@ -57,9 +74,9 @@ class MenuView(arcade.View):
         self._show_records = False
         self._records = []
         self._bg_stars = [(
-            __import__("random").randint(0, SCREEN_WIDTH),
-            __import__("random").randint(0, SCREEN_HEIGHT),
-            __import__("random").uniform(0, 6.28),
+            random.randint(0, SCREEN_WIDTH),
+            random.randint(0, SCREEN_HEIGHT),
+            random.uniform(0, 6.28),
         ) for _ in range(60)]
         self._bg_image = None
         self._load_background()
@@ -78,7 +95,10 @@ class MenuView(arcade.View):
     def on_draw(self):
         self.clear()
         if self._bg_image:
-            arcade.draw_lrwh_rectangle_textured(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, self._bg_image)
+            arcade.draw_texture_rect(
+                self._bg_image,
+                arcade.LBWH(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
+            )
         self._draw_bg()
         if self._show_records:
             self._draw_records()
@@ -92,8 +112,8 @@ class MenuView(arcade.View):
             arcade.draw_circle_filled(sx, sy, size, (200, 180, 255, alpha))
 
     def _draw_menu(self):
-        arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 600, 480, (40, 25, 65, 200))
-        arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 600, 480, (160, 120, 220), 2)
+        arcade.draw_lbwh_rectangle_filled(SCREEN_WIDTH / 2 - 300, SCREEN_HEIGHT / 2 - 240, 600, 480, (40, 25, 65, 200))
+        arcade.draw_lbwh_rectangle_outline(SCREEN_WIDTH / 2 - 300, SCREEN_HEIGHT / 2 - 240, 600, 480, (160, 120, 220), 2)
 
         title_y = SCREEN_HEIGHT / 2 + 180
         pulse = 1.0 + 0.04 * math.sin(self._timer * 2)
@@ -121,32 +141,21 @@ class MenuView(arcade.View):
         select_y = cont_y - 60
         rec_y = select_y - 60
 
-        arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, start_y, 280, 45, (100, 60, 180, 200))
-        arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, start_y, 280, 45, (200, 160, 255), 2)
-        arcade.draw_text("Начать заново", SCREEN_WIDTH / 2, start_y, (255, 240, 255), font_size=16, anchor_x="center",
-                         anchor_y="center")
+        buttons = [
+            (start_y, (100, 60, 180, 200), (200, 160, 255), "Начать заново", (255, 240, 255)),
+            (cont_y, (80, 50, 150, 200), (180, 140, 235), "Продолжить", (240, 230, 255)),
+            (select_y, (60, 40, 120, 200), (160, 120, 210), "Выбор уровня", (220, 210, 245)),
+            (rec_y, (45, 30, 90, 180), (140, 100, 180), "Таблица снов", (200, 180, 240)),
+        ]
 
-        arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, cont_y, 280, 45, (80, 50, 150, 200))
-        arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, cont_y, 280, 45, (180, 140, 235), 2)
-        arcade.draw_text("Продолжить", SCREEN_WIDTH / 2, cont_y, (240, 230, 255), font_size=16, anchor_x="center",
-                         anchor_y="center")
+        for y, bg_color, border_color, label, text_color in buttons:
+            _draw_button(SCREEN_WIDTH / 2, y, 280, 45, bg_color, border_color, label, text_color, 16)
 
-        arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, select_y, 280, 45, (60, 40, 120, 200))
-        arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, select_y, 280, 45, (160, 120, 210), 2)
-        arcade.draw_text("Выбор уровня", SCREEN_WIDTH / 2, select_y, (220, 210, 245), font_size=16, anchor_x="center",
-                         anchor_y="center")
-
-        arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, rec_y, 280, 45, (45, 30, 90, 180))
-        arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, rec_y, 280, 45, (140, 100, 180), 2)
-        arcade.draw_text("Таблица снов", SCREEN_WIDTH / 2, rec_y, (200, 180, 240), font_size=16, anchor_x="center",
-                         anchor_y="center")
-
-        arcade.draw_text("WASD / стрелки — управление", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 210, (140, 120, 180),
-                         font_size=13, anchor_x="center")
+        arcade.draw_text("WASD / стрелки — управление", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 210, (140, 120, 180), font_size=13, anchor_x="center")
 
     def _draw_records(self):
-        arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 700, 500, (40, 25, 65, 220))
-        arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 700, 500, (160, 120, 220), 2)
+        arcade.draw_lbwh_rectangle_filled(SCREEN_WIDTH / 2 - 350, SCREEN_HEIGHT / 2 - 250, 700, 500, (40, 25, 65, 220))
+        arcade.draw_lbwh_rectangle_outline(SCREEN_WIDTH / 2 - 350, SCREEN_HEIGHT / 2 - 250, 700, 500, (160, 120, 220), 2)
         arcade.draw_text("Таблица снов", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 210, (220, 200, 255), font_size=26,
                          anchor_x="center", bold=True)
 
@@ -179,17 +188,17 @@ class MenuView(arcade.View):
         select_y = cont_y - 60
         rec_y = select_y - 60
 
-        if abs(x - SCREEN_WIDTH / 2) < 140 and abs(y - start_y) < 22:
+        if _center_hit(x, y, SCREEN_WIDTH / 2, start_y, 140, 22):
             self.window.show_view(GameView(level=1))
 
-        elif abs(x - SCREEN_WIDTH / 2) < 140 and abs(y - cont_y) < 22:
+        elif _center_hit(x, y, SCREEN_WIDTH / 2, cont_y, 140, 22):
             next_lvl = get_last_uncompleted_level(MAX_LEVELS)
             self.window.show_view(GameView(level=next_lvl))
 
-        elif abs(x - SCREEN_WIDTH / 2) < 140 and abs(y - select_y) < 22:
+        elif _center_hit(x, y, SCREEN_WIDTH / 2, select_y, 140, 22):
             self.window.show_view(LevelSelectView())
 
-        elif abs(x - SCREEN_WIDTH / 2) < 140 and abs(y - rec_y) < 22:
+        elif _center_hit(x, y, SCREEN_WIDTH / 2, rec_y, 140, 22):
             self._records = get_top_records(limit=10)
             self._show_records = True
 
@@ -212,14 +221,15 @@ class GameView(arcade.View):
         self._walls = arcade.SpriteList()
         self._stars_list = arcade.SpriteList()
         self._nightmares = arcade.SpriteList()
+        self._player_list = arcade.SpriteList()
+        self._exit_list = arcade.SpriteList()
         self._exit_sprite = None
         self._player = None
 
         self._trail = TrailEmitter()
         self._burst = BurstEmitter()
 
-        self._camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
-        self._gui_camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
+        self._camera = arcade.Camera2D()
 
         self._stars_total = 0
         self._stars_collected = 0
@@ -251,12 +261,15 @@ class GameView(arcade.View):
         self._load_level()
         self._start_time = time.time()
         if self._snd_ambient:
-            self._ambient_player = arcade.play_sound(self._snd_ambient, looping=True)
+            self._ambient_player = arcade.play_sound(self._snd_ambient, loop=True)
 
     def _load_level(self):
         walls_pos, stars_pos, player_pos, exit_pos, lw, lh = load_level(self.level)
         self._level_width = lw
         self._level_height = lh
+
+        self._player_list = arcade.SpriteList()
+        self._exit_list = arcade.SpriteList()
 
         for x, y in walls_pos:
             w = Obstacle(x, y)
@@ -271,15 +284,22 @@ class GameView(arcade.View):
             self._player = Player(*player_pos)
         else:
             self._player = Player(100, self._level_height // 2)
+        self._player_list.append(self._player)
 
         if exit_pos:
             self._exit_sprite = ExitSprite(*exit_pos)
+            self._exit_list.append(self._exit_sprite)
 
-        import random
+        SAFE_RADIUS = 250.0
+
         patrol_range_base = NIGHTMARE_PATROL_BASE + self.level * NIGHTMARE_PATROL_LEVEL_MULT
         for i in range(NIGHTMARE_COUNT):
-            nx = random.randint(200, lw - 200)
-            ny = random.randint(100, lh - 100)
+            while True:
+                nx = random.randint(200, lw - 200)
+                ny = random.randint(100, lh - 100)
+                distance_to_player = math.hypot(nx - self._player.center_x, ny - self._player.center_y)
+                if distance_to_player > SAFE_RADIUS:
+                    break
             nm = Nightmare(nx, ny, patrol_range=patrol_range_base)
             self._nightmares.append(nm)
 
@@ -317,8 +337,8 @@ class GameView(arcade.View):
         if nm_hits:
             self._player.take_damage()
             if self._player.invincible_timer > 1.4:
-                self._shake_timer = 0.4
-                self._shake_intensity = 8.0
+                self._shake_timer = SHAKE_DURATION
+                self._shake_intensity = SHAKE_INTENSITY
                 _play(self._snd_hit)
 
         if self._exit_sprite:
@@ -343,22 +363,21 @@ class GameView(arcade.View):
         self._update_camera(delta_time)
 
     def _update_camera(self, delta_time):
-        target_x = self._player.center_x - SCREEN_WIDTH / 2
-        target_y = self._player.center_y - SCREEN_HEIGHT / 2
-        target_x = max(0, min(self._level_width - SCREEN_WIDTH, target_x))
-        target_y = max(0, min(self._level_height - SCREEN_HEIGHT, target_y))
+        target_x = self._player.center_x
+        target_y = self._player.center_y
+        target_x = max(SCREEN_WIDTH / 2, min(self._level_width - SCREEN_WIDTH / 2, target_x))
+        target_y = max(SCREEN_HEIGHT / 2, min(self._level_height - SCREEN_HEIGHT / 2, target_y))
 
         if self._shake_timer > 0:
-            import random
             target_x += random.uniform(-self._shake_intensity, self._shake_intensity)
             target_y += random.uniform(-self._shake_intensity, self._shake_intensity)
-            self._shake_timer -= delta_time
+            self._shake_timer = max(0.0, self._shake_timer - delta_time)
 
         cur = self._camera.position
         lerp = CAMERA_LERP * delta_time
         new_x = cur[0] + (target_x - cur[0]) * lerp
         new_y = cur[1] + (target_y - cur[1]) * lerp
-        self._camera.move_to((new_x, new_y))
+        self._camera.position = (new_x, new_y)
 
     def _finish(self, won):
         if won:
@@ -373,6 +392,7 @@ class GameView(arcade.View):
             self._stars_collected,
             self._stars_total,
             elapsed,
+            was_won=1 if won else 0,
         )
         view = GameOverView(
             won=won,
@@ -387,29 +407,29 @@ class GameView(arcade.View):
     def on_draw(self):
         self.clear()
         bg = LEVEL_BG_COLORS.get(self.level, (30, 20, 50))
-        arcade.draw_rectangle_filled(
-            SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT, bg
-        )
-
-        if self._bg_image:
-            self._camera.use()
-            arcade.draw_lrwh_rectangle_textured(0, 0, self._level_width, self._level_height, self._bg_image)
+        arcade.draw_lbwh_rectangle_filled(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bg)
 
         self._camera.use()
+
+        if self._bg_image:
+            arcade.draw_texture_rect(
+                self._bg_image,
+                arcade.LBWH(0, 0, self._level_width, self._level_height),
+            )
 
         self._trail.draw()
         self._walls.draw()
         self._stars_list.draw()
         self._nightmares.draw()
         if self._exit_sprite:
-            self._exit_sprite.draw()
+            self._exit_list.draw()
 
         if self._player.invincible_timer <= 0 or int(self._timer * 8) % 2 == 0:
-            self._player.draw()
+            self._player_list.draw()
 
         self._burst.draw()
 
-        self._gui_camera.use()
+        self.window.default_camera.use()
         self._draw_hud()
 
     def _draw_hud(self):
@@ -417,9 +437,9 @@ class GameView(arcade.View):
         bar_w = 200
         bar_x = 20
         bar_y = SCREEN_HEIGHT - 30
-        arcade.draw_rectangle_filled(bar_x + bar_w / 2, bar_y, bar_w, 18, COLOR_AWARENESS_BG)
-        arcade.draw_rectangle_filled(bar_x + bar_w * ratio / 2, bar_y, bar_w * ratio, 18, COLOR_AWARENESS_BAR)
-        arcade.draw_rectangle_outline(bar_x + bar_w / 2, bar_y, bar_w, 18, COLOR_AWARENESS_BORDER)
+        arcade.draw_lbwh_rectangle_filled(bar_x, bar_y - 9, bar_w, 18, COLOR_AWARENESS_BG)
+        arcade.draw_lbwh_rectangle_filled(bar_x, bar_y - 9, bar_w * ratio, 18, COLOR_AWARENESS_BAR)
+        arcade.draw_lbwh_rectangle_outline(bar_x, bar_y - 9, bar_w, 18, COLOR_AWARENESS_BORDER)
         arcade.draw_text("Осознанность", bar_x, bar_y + 12, (200, 180, 255), font_size=11)
 
         arcade.draw_text(f"Очки: {self._player.score}", SCREEN_WIDTH - 20, SCREEN_HEIGHT - 30, (220, 200, 255), font_size=14, anchor_x="right")
@@ -461,8 +481,8 @@ class GameOverView(arcade.View):
     def on_draw(self):
         self.clear()
 
-        arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 700, 460, (35, 22, 55, 220))
-        arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 700, 460, (160, 120, 220), 2)
+        arcade.draw_lbwh_rectangle_filled(SCREEN_WIDTH / 2 - 350, SCREEN_HEIGHT / 2 - 230, 700, 460, (35, 22, 55, 220))
+        arcade.draw_lbwh_rectangle_outline(SCREEN_WIDTH / 2 - 350, SCREEN_HEIGHT / 2 - 230, 700, 460, (160, 120, 220), 2)
 
         if self.won:
             title = "Сон завершён"
@@ -486,23 +506,19 @@ class GameOverView(arcade.View):
 
         if self._next_level:
             btn_y = SCREEN_HEIGHT / 2 - 110
-            arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, btn_y, 280, 46, (100, 60, 180, 200))
-            arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, btn_y, 280, 46, (200, 160, 255), 2)
-            arcade.draw_text("Следующий уровень", SCREEN_WIDTH / 2, btn_y, (255, 240, 255), font_size=16, anchor_x="center", anchor_y="center")
+            _draw_button(SCREEN_WIDTH / 2, btn_y, 280, 46, (100, 60, 180, 200), (200, 160, 255), "Следующий уровень", (255, 240, 255), 16)
 
         menu_y = SCREEN_HEIGHT / 2 - 170
-        arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, menu_y, 220, 44, (60, 40, 100, 180))
-        arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, menu_y, 220, 44, (160, 130, 200), 2)
-        arcade.draw_text("В главное меню", SCREEN_WIDTH / 2, menu_y, (200, 180, 240), font_size=15, anchor_x="center", anchor_y="center")
+        _draw_button(SCREEN_WIDTH / 2, menu_y, 220, 44, (60, 40, 100, 180), (160, 130, 200), "В главное меню", (200, 180, 240), 15)
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self._next_level:
             btn_y = SCREEN_HEIGHT / 2 - 110
-            if abs(x - SCREEN_WIDTH / 2) < 140 and abs(y - btn_y) < 23:
+            if _center_hit(x, y, SCREEN_WIDTH / 2, btn_y, 140, 23):
                 self.window.show_view(GameView(level=self._next_level))
                 return
         menu_y = SCREEN_HEIGHT / 2 - 170
-        if abs(x - SCREEN_WIDTH / 2) < 110 and abs(y - menu_y) < 22:
+        if _center_hit(x, y, SCREEN_WIDTH / 2, menu_y, 110, 22):
             self.window.show_view(MenuView())
 
     def on_key_press(self, key, modifiers):
@@ -536,7 +552,9 @@ class LevelSelectView(arcade.View):
                 "level": lvl_num,
                 "x": bx,
                 "y": by,
-                "unlocked": is_unlocked
+                "unlocked": is_unlocked,
+                "w": 70,
+                "h": 55,
             })
 
     def on_update(self, delta_time):
@@ -545,31 +563,14 @@ class LevelSelectView(arcade.View):
     def on_draw(self):
         self.clear()
 
-        arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 600, 440, (30, 20, 50, 230))
-        arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 600, 440, (150, 110, 200), 2)
+        arcade.draw_lbwh_rectangle_filled(SCREEN_WIDTH / 2 - 300, SCREEN_HEIGHT / 2 - 220, 600, 440, (30, 20, 50, 230))
+        arcade.draw_lbwh_rectangle_outline(SCREEN_WIDTH / 2 - 300, SCREEN_HEIGHT / 2 - 220, 600, 440, (150, 110, 200), 2)
 
         arcade.draw_text("Выбор уровня", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 160, (220, 200, 255), font_size=24,
                          anchor_x="center", bold=True)
 
         for btn in self._buttons:
-            if btn["unlocked"]:
-                bg_color = (90, 50, 160)
-                border_color = (190, 150, 240)
-                text_color = (255, 255, 255)
-            else:
-                bg_color = (45, 35, 55)
-                border_color = (80, 70, 90)
-                text_color = (110, 100, 120)
-
-            arcade.draw_rectangle_filled(btn["x"], btn["y"], 70, 55, bg_color)
-            arcade.draw_rectangle_outline(btn["x"], btn["y"], 70, 55, border_color, 2)
-
-            if btn["unlocked"]:
-                arcade.draw_text(str(btn["level"]), btn["x"], btn["y"], text_color, font_size=18, anchor_x="center",
-                                 anchor_y="center", bold=True)
-            else:
-                arcade.draw_text("🔒", btn["x"], btn["y"] - 2, text_color, font_size=14, anchor_x="center",
-                                 anchor_y="center")
+            self._draw_level_button(btn)
 
             if btn["unlocked"]:
                 lvl_name = LEVEL_NAMES.get(btn["level"], f"Сон {btn['level']}")
@@ -578,8 +579,8 @@ class LevelSelectView(arcade.View):
                 arcade.draw_text(lvl_name, btn["x"], btn["y"] - 40, (160, 140, 190), font_size=9, anchor_x="center")
 
         back_y = SCREEN_HEIGHT / 2 - 160
-        arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, back_y, 180, 40, (50, 35, 75))
-        arcade.draw_rectangle_outline(SCREEN_WIDTH / 2, back_y, 180, 40, (130, 100, 160), 1)
+        arcade.draw_lbwh_rectangle_filled(SCREEN_WIDTH / 2 - 90, back_y - 20, 180, 40, (50, 35, 75))
+        arcade.draw_lbwh_rectangle_outline(SCREEN_WIDTH / 2 - 90, back_y - 20, 180, 40, (130, 100, 160), 1)
         arcade.draw_text("Назад в меню", SCREEN_WIDTH / 2, back_y, (190, 170, 210), font_size=14, anchor_x="center",
                          anchor_y="center")
 
@@ -593,6 +594,24 @@ class LevelSelectView(arcade.View):
         back_y = SCREEN_HEIGHT / 2 - 160
         if abs(x - SCREEN_WIDTH / 2) < 90 and abs(y - back_y) < 20:
             self.window.show_view(MenuView())
+
+    def _draw_level_button(self, btn):
+        if btn["unlocked"]:
+            bg_color = (90, 50, 160)
+            border_color = (190, 150, 240)
+            text_color = (255, 255, 255)
+            text = str(btn["level"])
+            text_size = 18
+            text_y = btn["y"]
+        else:
+            bg_color = (45, 35, 55)
+            border_color = (80, 70, 90)
+            text_color = (110, 100, 120)
+            text = "🔒"
+            text_size = 14
+            text_y = btn["y"] - 2
+
+        _draw_button(btn["x"], btn["y"], btn["w"], btn["h"], bg_color, border_color, text, text_color, text_size, text_y=text_y)
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ESCAPE:

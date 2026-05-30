@@ -11,7 +11,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-> Требуется Python 3.9+
+> Требуется Python 3.11+
 
 
 ---

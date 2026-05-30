@@ -26,6 +26,11 @@ from config import (
 )
 
 
+def _load_texture(filename):
+    path = os.path.join(ASSETS_IMAGES_DIR, filename)
+    return arcade.load_texture(path)
+
+
 class BaseSprite(arcade.Sprite):
     def __init__(self, x, y, width=48, height=48):
         super().__init__()
@@ -47,13 +52,12 @@ class Player(BaseSprite):
         self.anim_frame = 0
         self._build_textures()
         self.texture = self._idle_textures[0]
+        self.width = PLAYER_WIDTH
+        self.height = PLAYER_HEIGHT
 
     def _build_textures(self):
-        idle_path = os.path.join(ASSETS_IMAGES_DIR, "player_idle.png")
-        fly_path = os.path.join(ASSETS_IMAGES_DIR, "player_fly.png")
-
-        self._idle_textures = [arcade.load_texture(idle_path)]
-        self._fly_textures = [arcade.load_texture(fly_path)]
+        self._idle_textures = [_load_texture("player_idle.png")]
+        self._fly_textures = [_load_texture("player_fly.png")]
 
     def update_movement(self, keys, delta_time):
         moving = False
@@ -75,8 +79,9 @@ class Player(BaseSprite):
         self.vel_y = max(-PLAYER_SPEED, min(PLAYER_SPEED, self.vel_y))
 
         if not moving:
-            self.vel_x *= 1 - PLAYER_FRICTION * delta_time
-            self.vel_y *= 1 - PLAYER_FRICTION * delta_time
+            friction = max(0.0, 1 - PLAYER_FRICTION * delta_time)
+            self.vel_x *= friction
+            self.vel_y *= friction
 
         self.center_x += self.vel_x * delta_time
         self.center_y += self.vel_y * delta_time
@@ -89,7 +94,7 @@ class Player(BaseSprite):
             self.texture = textures[self.anim_frame]
 
         if self.invincible_timer > 0:
-            self.invincible_timer -= delta_time
+            self.invincible_timer = max(0.0, self.invincible_timer - delta_time)
 
     def take_damage(self):
         if self.invincible_timer <= 0:
@@ -99,15 +104,15 @@ class Player(BaseSprite):
     def is_dead(self):
         return self.awareness <= 0
 
-    def draw_awareness_bar(self, cam_x, cam_y, screen_w):
+    def draw_awareness_bar(self, cam_x, cam_y, screen_h):
         bar_x = cam_x + 20
-        bar_y = cam_y + screen_w - 20
+        bar_y = cam_y + screen_h - 20
         bar_w = 200
         bar_h = 16
         ratio = max(0, self.awareness / MAX_AWARENESS)
-        arcade.draw_rectangle_filled(bar_x + bar_w / 2, bar_y, bar_w, bar_h, COLOR_AWARENESS_BG)
-        arcade.draw_rectangle_filled(bar_x + bar_w * ratio / 2, bar_y, bar_w * ratio, bar_h, COLOR_AWARENESS_BAR)
-        arcade.draw_rectangle_outline(bar_x + bar_w / 2, bar_y, bar_w, bar_h, COLOR_AWARENESS_BORDER)
+        arcade.draw_lbwh_rectangle_filled(bar_x, bar_y - bar_h / 2, bar_w, bar_h, COLOR_AWARENESS_BG)
+        arcade.draw_lbwh_rectangle_filled(bar_x, bar_y - bar_h / 2, bar_w * ratio, bar_h, COLOR_AWARENESS_BAR)
+        arcade.draw_lbwh_rectangle_outline(bar_x, bar_y - bar_h / 2, bar_w, bar_h, COLOR_AWARENESS_BORDER)
 
 
 class Collectible(BaseSprite):
@@ -117,10 +122,12 @@ class Collectible(BaseSprite):
         self._base_scale = 1.0
         self._angle = 0.0
         self._load_texture()
+        self.width = COLLECTIBLE_SIZE
+        self.height = COLLECTIBLE_SIZE
+        self._base_scale = self.scale_x
 
     def _load_texture(self):
-        path = os.path.join(ASSETS_IMAGES_DIR, "star.png")
-        self.texture = arcade.load_texture(path)
+        self.texture = _load_texture("star.png")
 
     def update(self, delta_time):
         self._timer += delta_time
@@ -133,10 +140,11 @@ class Obstacle(BaseSprite):
     def __init__(self, x, y):
         super().__init__(x, y, OBSTACLE_WIDTH, OBSTACLE_HEIGHT)
         self._load_texture()
+        self.width = OBSTACLE_WIDTH
+        self.height = OBSTACLE_HEIGHT
 
     def _load_texture(self):
-        path = os.path.join(ASSETS_IMAGES_DIR, "wall_cloud.png")
-        self.texture = arcade.load_texture(path)
+        self.texture = _load_texture("wall_cloud.png")
 
 
 class Nightmare(BaseSprite):
@@ -147,10 +155,11 @@ class Nightmare(BaseSprite):
         self._dir = 1
         self._speed = NIGHTMARE_SPEED
         self._load_texture()
+        self.width = 44
+        self.height = 44
 
     def _load_texture(self):
-        path = os.path.join(ASSETS_IMAGES_DIR, "nightmare.png")
-        self.texture = arcade.load_texture(path)
+        self.texture = _load_texture("nightmare.png")
 
     def update(self, delta_time):
         self.center_x += self._dir * self._speed * delta_time
@@ -163,10 +172,11 @@ class ExitSprite(BaseSprite):
         super().__init__(x, y, EXIT_SIZE, EXIT_SIZE)
         self._timer = 0.0
         self._load_texture()
+        self.width = EXIT_SIZE
+        self.height = EXIT_SIZE
 
     def _load_texture(self):
-        path = os.path.join(ASSETS_IMAGES_DIR, "dream_catcher.png")
-        self.texture = arcade.load_texture(path)
+        self.texture = _load_texture("dream_catcher.png")
 
     def update(self, delta_time):
         self._timer += delta_time
