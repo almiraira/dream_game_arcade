@@ -1,4 +1,5 @@
 import os
+import sys
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -7,13 +8,16 @@ SCREEN_WIDTH = int(os.getenv("SCREEN_WIDTH", 1024))
 SCREEN_HEIGHT = int(os.getenv("SCREEN_HEIGHT", 640))
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ASSETS_DIR = os.path.join(BASE_DIR, os.getenv("ASSETS_DIR", "assets"))
-ASSETS_IMAGES_DIR = os.path.join(BASE_DIR, os.getenv("ASSETS_IMAGES_DIR", "assets/images"))
-ASSETS_SOUNDS_DIR = os.path.join(BASE_DIR, os.getenv("ASSETS_SOUNDS_DIR", "assets/sounds"))
-LEVELS_DIR = os.path.join(BASE_DIR, os.getenv("LEVELS_DIR", "levels"))
-DATA_DIR = os.path.join(BASE_DIR, os.getenv("DATA_DIR", "data"))
-DB_PATH = os.path.join(BASE_DIR, os.getenv("DB_PATH", "data/dream_history.db"))
-CSV_PATH = os.path.join(BASE_DIR, os.getenv("CSV_PATH", "data/dream_history.csv"))
+RESOURCE_DIR = getattr(sys, "_MEIPASS", BASE_DIR)
+APP_DIR = os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else BASE_DIR
+
+ASSETS_DIR = os.path.join(RESOURCE_DIR, os.getenv("ASSETS_DIR", "assets"))
+ASSETS_IMAGES_DIR = os.path.join(RESOURCE_DIR, os.getenv("ASSETS_IMAGES_DIR", "assets/images"))
+ASSETS_SOUNDS_DIR = os.path.join(RESOURCE_DIR, os.getenv("ASSETS_SOUNDS_DIR", "assets/sounds"))
+LEVELS_DIR = os.path.join(RESOURCE_DIR, os.getenv("LEVELS_DIR", "levels"))
+DATA_DIR = os.path.join(APP_DIR, os.getenv("DATA_DIR", "data"))
+DB_PATH = os.path.join(APP_DIR, os.getenv("DB_PATH", "data/dream_history.db"))
+CSV_PATH = os.path.join(APP_DIR, os.getenv("CSV_PATH", "data/dream_history.csv"))
 
 MAX_LEVELS = int(os.getenv("MAX_LEVELS", 3))
 
@@ -94,4 +98,3 @@ TILE_WALL = "#"
 TILE_STAR = "*"
 TILE_PLAYER = "@"
 TILE_EXIT = "E"
-
